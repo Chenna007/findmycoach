@@ -1,0 +1,37 @@
+{
+  "name": "findmycoach",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n \"API,WEB\" -c \"yellow,cyan\" \"node --watch server.js\" \"vite\"",
+    "server": "node --watch server.js",
+    "build": "vite build",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.99.3",
+    "cors": "^2.8.6",
+    "dodopayments": "^2.23.3",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.3.1",
+    "joi": "^18.0.2",
+    "jspdf": "^4.2.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "stripe": "^20.4.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react": "^4.0.3",
+    "concurrently": "^9.2.1",
+    "eslint": "^8.45.0",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "vite": "^4.4.5"
+  }
+}

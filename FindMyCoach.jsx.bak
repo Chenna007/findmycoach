@@ -1,0 +1,1149 @@
+import { useState, useEffect, useRef } from "react";
+
+// ─── Data ───────────────────────────────────────────────────────────────────
+const PROGRAMS = [
+  { id: 1, title: "Weight Loss", icon: "🔥", desc: "Burn fat with personalized plans" },
+  { id: 2, title: "Boxing & Kickboxing", icon: "🥊", desc: "Learn striking & build power" },
+  { id: 3, title: "Muscle Toning", icon: "💪", desc: "Sculpt and define your physique" },
+  { id: 4, title: "Rehabilitation", icon: "🩹", desc: "Recover stronger than before" },
+  { id: 5, title: "Corporate Training", icon: "🏢", desc: "Team fitness & wellness" },
+  { id: 6, title: "Pre/Postnatal", icon: "🤰", desc: "Safe training for mothers" },
+  { id: 7, title: "Nutrition Coaching", icon: "🥗", desc: "Fuel your body right" },
+  { id: 8, title: "Yoga & Pilates", icon: "🧘", desc: "Flexibility, balance & peace" },
+  { id: 9, title: "Swimming", icon: "🏊", desc: "Aquatic fitness coaching" },
+  { id: 10, title: "CrossFit", icon: "🏋️", desc: "High-intensity functional fitness" },
+  { id: 11, title: "Dance", icon: "💃", desc: "Move to the rhythm & burn" },
+  { id: 12, title: "Assisted Stretching", icon: "🤸", desc: "Improve mobility & recovery" },
+];
+
+const TRAINERS = [
+  { id: 1, name: "Ahmed Al-Rashid", spec: "Weight Loss & HIIT", exp: "8 years", price: 250, rating: 4.9, location: "Dubai Marina", bio: "Certified personal trainer specializing in high-intensity interval training and weight management. Former professional athlete with a passion for helping clients achieve sustainable results.", programs: ["Weight Loss", "CrossFit", "Nutrition Coaching"], reviews: 127, img: "https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=400&h=400&fit=crop&crop=face" },
+  { id: 2, name: "Sara Mitchell", spec: "Yoga & Pilates", exp: "6 years", price: 200, rating: 4.8, location: "JBR", bio: "Internationally certified yoga instructor with expertise in Vinyasa, Hatha, and therapeutic yoga. Focused on mind-body connection and holistic wellness.", programs: ["Yoga & Pilates", "Assisted Stretching", "Pre/Postnatal"], reviews: 94, img: "https://images.unsplash.com/photo-1594381898411-846e7d193883?w=400&h=400&fit=crop&crop=face" },
+  { id: 3, name: "Marcus Chen", spec: "Boxing & MMA", exp: "10 years", price: 300, rating: 5.0, location: "Downtown Dubai", bio: "Former competitive boxer turned elite fitness coach. Specializes in combat sports training and functional strength for fighters and enthusiasts alike.", programs: ["Boxing & Kickboxing", "Muscle Toning", "CrossFit"], reviews: 203, img: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&h=400&fit=crop&crop=face" },
+  { id: 4, name: "Fatima Noor", spec: "Nutrition & Wellness", exp: "5 years", price: 180, rating: 4.7, location: "Online", bio: "Registered dietitian and wellness coach helping clients transform through evidence-based nutrition strategies and lifestyle modifications.", programs: ["Nutrition Coaching", "Weight Loss", "Corporate Training"], reviews: 76, img: "https://images.unsplash.com/photo-1609505848912-b7c3b8b4beda?w=400&h=400&fit=crop&crop=face" },
+  { id: 5, name: "James Rodriguez", spec: "CrossFit & Strength", exp: "7 years", price: 280, rating: 4.9, location: "Business Bay", bio: "CrossFit L3 certified trainer with a background in Olympic weightlifting. Passionate about building raw strength and athletic performance.", programs: ["CrossFit", "Muscle Toning", "Rehabilitation"], reviews: 158, img: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=400&fit=crop&crop=face" },
+  { id: 6, name: "Layla Hassan", spec: "Dance & Cardio", exp: "4 years", price: 160, rating: 4.6, location: "JLT", bio: "Professional dancer and certified fitness instructor specializing in dance-based cardio workouts. Makes fitness fun and accessible for everyone.", programs: ["Dance", "Weight Loss", "Corporate Training"], reviews: 62, img: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=400&fit=crop&crop=face" },
+  { id: 7, name: "David Park", spec: "Swimming & Aquatics", exp: "12 years", price: 320, rating: 4.8, location: "Palm Jumeirah", bio: "Former national swim team member and aquatic fitness specialist. Offers stroke technique, water therapy, and aquatic endurance training.", programs: ["Swimming", "Rehabilitation", "Assisted Stretching"], reviews: 89, img: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=400&h=400&fit=crop&crop=face" },
+  { id: 8, name: "Nina Volkov", spec: "Pre/Postnatal Fitness", exp: "9 years", price: 220, rating: 4.9, location: "Dubai Hills", bio: "Women's health specialist and pre/postnatal exercise expert. Certified by the American College of Sports Medicine with a focus on safe, effective training for mothers.", programs: ["Pre/Postnatal", "Yoga & Pilates", "Assisted Stretching"], reviews: 134, img: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop&crop=face" },
+  { id: 9, name: "Omar Khalil", spec: "Muscle Building", exp: "11 years", price: 290, rating: 4.8, location: "DIFC", bio: "Competitive bodybuilder and strength coach with over a decade of experience in hypertrophy training and physique development.", programs: ["Muscle Toning", "Nutrition Coaching", "CrossFit"], reviews: 171, img: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=400&fit=crop&crop=face" },
+  { id: 10, name: "Emma Sterling", spec: "Corporate Wellness", exp: "6 years", price: 350, rating: 4.7, location: "Online", bio: "Corporate wellness consultant providing team fitness programs, stress management workshops, and workplace health initiatives for leading companies.", programs: ["Corporate Training", "Yoga & Pilates", "Nutrition Coaching"], reviews: 55, img: "https://images.unsplash.com/photo-1548690312-e3b507d8c110?w=400&h=400&fit=crop&crop=face" },
+];
+
+const PACKAGES = [
+  { name: "Single Session", sessions: 1, discount: 0 },
+  { name: "Starter Pack", sessions: 5, discount: 10 },
+  { name: "Pro Pack", sessions: 10, discount: 15 },
+  { name: "Elite Pack", sessions: 20, discount: 20 },
+];
+
+// ─── Styles ─────────────────────────────────────────────────────────────────
+const font = `'DM Sans', sans-serif`;
+const fontDisplay = `'Outfit', sans-serif`;
+
+const GlobalCSS = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0a;
+      --bg2: #111111;
+      --bg3: #1a1a1a;
+      --card: rgba(255,255,255,0.04);
+      --card-hover: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.08);
+      --text: #ffffff;
+      --text2: rgba(255,255,255,0.65);
+      --text3: rgba(255,255,255,0.4);
+      --accent: #c8ff00;
+      --accent2: #a8d800;
+      --accent-glow: rgba(200,255,0,0.15);
+      --gold: #f0c27f;
+      --gold2: #e8b95e;
+      --radius: 20px;
+      --radius-sm: 14px;
+      --radius-xs: 10px;
+      --glass: rgba(255,255,255,0.05);
+      --glass-border: rgba(255,255,255,0.1);
+    }
+
+    body, html {
+      font-family: ${font};
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    ::selection {
+      background: var(--accent);
+      color: #000;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideRight {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    @keyframes scaleIn {
+      from { opacity:0; transform: scale(0.92); }
+      to { opacity:1; transform: scale(1); }
+    }
+
+    .fade-up { animation: fadeUp 0.7s ease-out both; }
+    .fade-in { animation: fadeIn 0.5s ease-out both; }
+    .slide-r { animation: slideRight 0.6s ease-out both; }
+    .scale-in { animation: scaleIn 0.4s ease-out both; }
+  `}</style>
+);
+
+// ─── Components ─────────────────────────────────────────────────────────────
+
+const Star = ({ filled }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill={filled ? "var(--accent)" : "none"} stroke="var(--accent)" strokeWidth="2">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+  </svg>
+);
+
+const Badge = ({ children, variant = "default" }) => {
+  const styles = {
+    default: { background: "var(--card)", color: "var(--text2)", border: "1px solid var(--border)" },
+    accent: { background: "var(--accent-glow)", color: "var(--accent)", border: "1px solid rgba(200,255,0,0.2)" },
+    gold: { background: "rgba(240,194,127,0.1)", color: "var(--gold)", border: "1px solid rgba(240,194,127,0.2)" },
+  };
+  return (
+    <span style={{ ...styles[variant], padding: "4px 12px", borderRadius: 100, fontSize: 12, fontWeight: 600, letterSpacing: 0.5, display: "inline-flex", alignItems: "center", gap: 4 }}>
+      {children}
+    </span>
+  );
+};
+
+const Button = ({ children, variant = "primary", size = "md", onClick, style = {}, full }) => {
+  const base = {
+    fontFamily: fontDisplay,
+    fontWeight: 600,
+    borderRadius: 14,
+    cursor: "pointer",
+    transition: "all 0.3s cubic-bezier(0.4,0,0.2,1)",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    border: "none",
+    letterSpacing: 0.3,
+    width: full ? "100%" : "auto",
+  };
+  const sizes = {
+    sm: { padding: "8px 18px", fontSize: 13 },
+    md: { padding: "12px 28px", fontSize: 14 },
+    lg: { padding: "16px 36px", fontSize: 16 },
+  };
+  const variants = {
+    primary: {
+      background: "var(--accent)",
+      color: "#000",
+      boxShadow: "0 0 30px rgba(200,255,0,0.2)",
+    },
+    secondary: {
+      background: "var(--card)",
+      color: "var(--text)",
+      border: "1px solid var(--border)",
+      backdropFilter: "blur(10px)",
+    },
+    ghost: {
+      background: "transparent",
+      color: "var(--text2)",
+      border: "1px solid var(--border)",
+    },
+    gold: {
+      background: "linear-gradient(135deg, var(--gold), var(--gold2))",
+      color: "#000",
+      boxShadow: "0 0 30px rgba(240,194,127,0.2)",
+    },
+  };
+  return (
+    <button
+      onClick={onClick}
+      style={{ ...base, ...sizes[size], ...variants[variant], ...style }}
+      onMouseEnter={e => {
+        e.target.style.transform = "translateY(-2px)";
+        if (variant === "primary") e.target.style.boxShadow = "0 0 50px rgba(200,255,0,0.35)";
+      }}
+      onMouseLeave={e => {
+        e.target.style.transform = "translateY(0)";
+        if (variant === "primary") e.target.style.boxShadow = "0 0 30px rgba(200,255,0,0.2)";
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const Input = ({ label, type = "text", placeholder, value, onChange, textarea, options }) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+    {label && <label style={{ fontSize: 13, color: "var(--text2)", fontWeight: 500 }}>{label}</label>}
+    {options ? (
+      <select value={value} onChange={onChange} style={{
+        padding: "12px 16px", borderRadius: "var(--radius-xs)", background: "var(--bg3)",
+        border: "1px solid var(--border)", color: "var(--text)", fontSize: 14, fontFamily: font,
+        outline: "none", transition: "border 0.3s", appearance: "none",
+      }}>
+        <option value="">{placeholder}</option>
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+    ) : textarea ? (
+      <textarea value={value} onChange={onChange} placeholder={placeholder} rows={4} style={{
+        padding: "12px 16px", borderRadius: "var(--radius-xs)", background: "var(--bg3)",
+        border: "1px solid var(--border)", color: "var(--text)", fontSize: 14, fontFamily: font,
+        outline: "none", resize: "vertical", transition: "border 0.3s",
+      }} onFocus={e => e.target.style.borderColor = "var(--accent)"} onBlur={e => e.target.style.borderColor = "var(--border)"} />
+    ) : (
+      <input type={type} value={value} onChange={onChange} placeholder={placeholder} style={{
+        padding: "12px 16px", borderRadius: "var(--radius-xs)", background: "var(--bg3)",
+        border: "1px solid var(--border)", color: "var(--text)", fontSize: 14, fontFamily: font,
+        outline: "none", transition: "border 0.3s",
+      }} onFocus={e => e.target.style.borderColor = "var(--accent)"} onBlur={e => e.target.style.borderColor = "var(--border)"} />
+    )}
+  </div>
+);
+
+const GlassCard = ({ children, style = {}, hover = true, onClick, className = "" }) => (
+  <div
+    className={className}
+    onClick={onClick}
+    style={{
+      background: "var(--card)",
+      border: "1px solid var(--border)",
+      borderRadius: "var(--radius)",
+      backdropFilter: "blur(20px)",
+      transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)",
+      cursor: onClick ? "pointer" : "default",
+      ...style,
+    }}
+    onMouseEnter={e => {
+      if (hover) {
+        e.currentTarget.style.background = "var(--card-hover)";
+        e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)";
+        e.currentTarget.style.transform = "translateY(-4px)";
+        e.currentTarget.style.boxShadow = "0 20px 60px rgba(0,0,0,0.3)";
+      }
+    }}
+    onMouseLeave={e => {
+      if (hover) {
+        e.currentTarget.style.background = "var(--card)";
+        e.currentTarget.style.borderColor = "var(--border)";
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "none";
+      }
+    }}
+  >
+    {children}
+  </div>
+);
+
+const Section = ({ children, style = {} }) => (
+  <section style={{ padding: "80px 24px", maxWidth: 1280, margin: "0 auto", ...style }}>
+    {children}
+  </section>
+);
+
+const SectionTitle = ({ sub, title, align = "left" }) => (
+  <div style={{ marginBottom: 48, textAlign: align }}>
+    <p style={{ color: "var(--accent)", fontSize: 13, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", marginBottom: 12, fontFamily: fontDisplay }}>{sub}</p>
+    <h2 style={{ fontFamily: fontDisplay, fontSize: "clamp(28px, 4vw, 42px)", fontWeight: 800, lineHeight: 1.15, color: "var(--text)" }}>{title}</h2>
+  </div>
+);
+
+// ─── Navbar ─────────────────────────────────────────────────────────────────
+const Navbar = ({ page, setPage, setShowAuth }) => {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const h = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", h);
+    return () => window.removeEventListener("scroll", h);
+  }, []);
+  return (
+    <nav style={{
+      position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000,
+      padding: "0 24px", height: 72,
+      background: scrolled ? "rgba(10,10,10,0.85)" : "transparent",
+      backdropFilter: scrolled ? "blur(20px)" : "none",
+      borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent",
+      transition: "all 0.4s ease",
+      display: "flex", alignItems: "center", justifyContent: "center",
+    }}>
+      <div style={{ maxWidth: 1280, width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div onClick={() => setPage("home")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 12, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 900, color: "#000", fontFamily: fontDisplay }}>F</div>
+          <span style={{ fontFamily: fontDisplay, fontSize: 20, fontWeight: 800, letterSpacing: -0.5 }}>FindMyCoach</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {[
+            { label: "Home", key: "home" },
+            { label: "Trainers", key: "trainers" },
+            { label: "Become a Coach", key: "become-coach" },
+          ].map(n => (
+            <button key={n.key} onClick={() => setPage(n.key)} style={{
+              background: page === n.key ? "var(--card)" : "transparent",
+              border: page === n.key ? "1px solid var(--border)" : "1px solid transparent",
+              color: page === n.key ? "var(--text)" : "var(--text2)",
+              padding: "8px 18px", borderRadius: 12, fontSize: 14, fontWeight: 500,
+              cursor: "pointer", fontFamily: font, transition: "all 0.3s",
+            }}>{n.label}</button>
+          ))}
+          <Button variant="primary" size="sm" onClick={() => setShowAuth(true)}>Sign In</Button>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+// ─── Hero ────────────────────────────────────────────────────────────────────
+const Hero = ({ setPage, setGoalFilter }) => {
+  const [goal, setGoal] = useState("");
+  const [loc, setLoc] = useState("");
+  return (
+    <div style={{
+      minHeight: "100vh", display: "flex", alignItems: "center", padding: "100px 24px 60px",
+      background: `radial-gradient(ellipse at 20% 50%, rgba(200,255,0,0.06) 0%, transparent 60%),
+                    radial-gradient(ellipse at 80% 20%, rgba(240,194,127,0.04) 0%, transparent 50%),
+                    var(--bg)`,
+      position: "relative", overflow: "hidden",
+    }}>
+      {/* Grid pattern */}
+      <div style={{
+        position: "absolute", inset: 0, opacity: 0.03,
+        backgroundImage: "linear-gradient(var(--text) 1px, transparent 1px), linear-gradient(90deg, var(--text) 1px, transparent 1px)",
+        backgroundSize: "60px 60px",
+      }} />
+
+      <div style={{ maxWidth: 1280, margin: "0 auto", width: "100%", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, alignItems: "center", position: "relative" }}>
+        <div className="fade-up">
+          <Badge variant="accent">✦ #1 Fitness Marketplace in the UAE</Badge>
+          <h1 style={{
+            fontFamily: fontDisplay, fontSize: "clamp(48px, 6vw, 80px)", fontWeight: 900,
+            lineHeight: 1.05, marginTop: 24, letterSpacing: -2,
+          }}>
+            Find.<br />Book.<br />
+            <span style={{ color: "var(--accent)", textShadow: "0 0 60px rgba(200,255,0,0.3)" }}>Train.</span>
+          </h1>
+          <p style={{ fontSize: 18, color: "var(--text2)", marginTop: 20, lineHeight: 1.7, maxWidth: 480 }}>
+            Find the right fitness coach near you or online. Personalized training, real results.
+          </p>
+
+          {/* Search bar */}
+          <div style={{
+            marginTop: 36, display: "flex", gap: 0,
+            background: "var(--bg3)", borderRadius: 18, border: "1px solid var(--border)",
+            overflow: "hidden", maxWidth: 560,
+          }}>
+            <select value={goal} onChange={e => setGoal(e.target.value)} style={{
+              flex: 1, padding: "16px 20px", background: "transparent", border: "none",
+              color: goal ? "var(--text)" : "var(--text3)", fontSize: 14, fontFamily: font, outline: "none",
+              borderRight: "1px solid var(--border)", appearance: "none",
+            }}>
+              <option value="">Goal</option>
+              {PROGRAMS.map(p => <option key={p.id} value={p.title}>{p.title}</option>)}
+            </select>
+            <select value={loc} onChange={e => setLoc(e.target.value)} style={{
+              flex: 1, padding: "16px 20px", background: "transparent", border: "none",
+              color: loc ? "var(--text)" : "var(--text3)", fontSize: 14, fontFamily: font, outline: "none",
+              appearance: "none",
+            }}>
+              <option value="">Location</option>
+              {["Dubai Marina", "Downtown Dubai", "JBR", "Online", "JLT", "Business Bay", "DIFC", "Palm Jumeirah"].map(l => (
+                <option key={l} value={l}>{l}</option>
+              ))}
+            </select>
+            <button onClick={() => { setGoalFilter(goal); setPage("trainers"); }} style={{
+              padding: "16px 28px", background: "var(--accent)", border: "none", color: "#000",
+              fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: fontDisplay,
+              transition: "all 0.3s", letterSpacing: 0.3,
+            }}>
+              Find a Coach →
+            </button>
+          </div>
+
+          {/* Social proof */}
+          <div style={{ marginTop: 36, display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ display: "flex" }}>
+              {TRAINERS.slice(0, 4).map((t, i) => (
+                <img key={t.id} src={t.img} alt="" style={{
+                  width: 38, height: 38, borderRadius: "50%", border: "3px solid var(--bg)",
+                  marginLeft: i ? -12 : 0, objectFit: "cover",
+                }} />
+              ))}
+            </div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>500+ Active Coaches</div>
+              <div style={{ fontSize: 12, color: "var(--text3)" }}>Across the UAE & Online</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right side visual */}
+        <div className="fade-in" style={{ position: "relative", animationDelay: "0.3s" }}>
+          <div style={{
+            borderRadius: 32, overflow: "hidden", aspectRatio: "4/5", position: "relative",
+            boxShadow: "0 40px 100px rgba(0,0,0,0.5)",
+          }}>
+            <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&h=750&fit=crop" alt="Fitness" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%)" }} />
+          </div>
+
+          {/* Floating card - rating */}
+          <div style={{
+            position: "absolute", top: 30, left: -40,
+            background: "rgba(20,20,20,0.85)", backdropFilter: "blur(20px)",
+            borderRadius: 18, padding: "16px 22px",
+            border: "1px solid var(--glass-border)",
+            animation: "float 4s ease-in-out infinite",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 28, fontWeight: 800, fontFamily: fontDisplay, color: "var(--accent)" }}>4.9</span>
+              <div>
+                <div style={{ display: "flex", gap: 2 }}>{[1,2,3,4,5].map(i => <Star key={i} filled />)}</div>
+                <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>1,200+ Reviews</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Floating card - program */}
+          <div style={{
+            position: "absolute", bottom: 80, right: -30,
+            background: "rgba(20,20,20,0.85)", backdropFilter: "blur(20px)",
+            borderRadius: 18, padding: "16px 20px",
+            border: "1px solid var(--glass-border)",
+            animation: "float 5s ease-in-out infinite", animationDelay: "1s",
+          }}>
+            <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 6, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Popular Now</div>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>🥊 Boxing & Kickboxing</div>
+            <div style={{ fontSize: 12, color: "var(--accent)", marginTop: 4 }}>32 coaches available</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Programs Section ───────────────────────────────────────────────────────
+const ProgramsSection = ({ setPage, setGoalFilter }) => (
+  <Section style={{ background: "var(--bg2)", borderRadius: 0, maxWidth: "100%", padding: "100px 24px" }}>
+    <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+      <SectionTitle sub="Training Programs" title="What are you training for?" align="center" />
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+        gap: 16,
+      }}>
+        {PROGRAMS.map((p, i) => (
+          <GlassCard key={p.id} onClick={() => { setGoalFilter(p.title); setPage("trainers"); }}
+            style={{ padding: 24, cursor: "pointer", animationDelay: `${i * 0.05}s` }} className="fade-up"
+          >
+            <div style={{ fontSize: 32, marginBottom: 12 }}>{p.icon}</div>
+            <div style={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: 15, marginBottom: 6 }}>{p.title}</div>
+            <div style={{ fontSize: 13, color: "var(--text3)", lineHeight: 1.5 }}>{p.desc}</div>
+            <div style={{ marginTop: 14, fontSize: 12, color: "var(--accent)", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
+              Explore Coaches <span style={{ fontSize: 14 }}>→</span>
+            </div>
+          </GlassCard>
+        ))}
+      </div>
+    </div>
+  </Section>
+);
+
+// ─── Featured Coaches Section ───────────────────────────────────────────────
+const FeaturedCoaches = ({ setPage, setSelectedTrainer }) => {
+  const scrollRef = useRef(null);
+  return (
+    <Section>
+      <SectionTitle sub="Top Rated" title="Featured Coaches" />
+      <div ref={scrollRef} style={{
+        display: "flex", gap: 20, overflowX: "auto", paddingBottom: 20,
+        scrollSnapType: "x mandatory", scrollbarWidth: "none",
+      }}>
+        {TRAINERS.slice(0, 6).map((t, i) => (
+          <GlassCard key={t.id} style={{
+            minWidth: 280, scrollSnapAlign: "start",
+            animationDelay: `${i * 0.1}s`, padding: 0, overflow: "hidden",
+          }} className="fade-up">
+            <div style={{ position: "relative" }}>
+              <img src={t.img} alt={t.name} style={{ width: "100%", height: 220, objectFit: "cover" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%)" }} />
+              <div style={{ position: "absolute", top: 12, right: 12 }}>
+                <Badge variant="accent">★ {t.rating}</Badge>
+              </div>
+            </div>
+            <div style={{ padding: 20 }}>
+              <h3 style={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: 17, marginBottom: 4 }}>{t.name}</h3>
+              <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 12 }}>{t.spec}</p>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <span style={{ fontSize: 22, fontWeight: 800, fontFamily: fontDisplay, color: "var(--accent)" }}>{t.price}</span>
+                  <span style={{ fontSize: 12, color: "var(--text3)" }}> AED/session</span>
+                </div>
+                <Button size="sm" variant="primary" onClick={() => { setSelectedTrainer(t); setPage("trainer-profile"); }}>
+                  Book Now
+                </Button>
+              </div>
+            </div>
+          </GlassCard>
+        ))}
+      </div>
+    </Section>
+  );
+};
+
+// ─── How It Works ───────────────────────────────────────────────────────────
+const HowItWorks = () => {
+  const steps = [
+    { num: "01", icon: "🔍", title: "Search", desc: "Browse coaches by specialty, location, or budget." },
+    { num: "02", icon: "⚖️", title: "Compare", desc: "View profiles, read reviews, and compare pricing." },
+    { num: "03", icon: "📅", title: "Book", desc: "Request a session and start training." },
+  ];
+  return (
+    <Section style={{ background: "var(--bg2)", maxWidth: "100%", borderRadius: 0, padding: "100px 24px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+        <SectionTitle sub="How It Works" title="Start training in 3 simple steps" align="center" />
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+          {steps.map((s, i) => (
+            <GlassCard key={i} style={{ padding: 40, textAlign: "center", position: "relative", overflow: "hidden" }} className="fade-up">
+              <div style={{
+                position: "absolute", top: -10, right: 10, fontSize: 100, fontWeight: 900,
+                fontFamily: fontDisplay, color: "rgba(200,255,0,0.04)", lineHeight: 1,
+              }}>{s.num}</div>
+              <div style={{ fontSize: 48, marginBottom: 20 }}>{s.icon}</div>
+              <h3 style={{ fontFamily: fontDisplay, fontSize: 22, fontWeight: 800, marginBottom: 10 }}>{s.title}</h3>
+              <p style={{ fontSize: 14, color: "var(--text2)", lineHeight: 1.7 }}>{s.desc}</p>
+            </GlassCard>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+};
+
+// ─── CTA Section ────────────────────────────────────────────────────────────
+const CTASection = ({ setPage }) => (
+  <Section>
+    <GlassCard hover={false} style={{
+      padding: "72px 48px", textAlign: "center", position: "relative", overflow: "hidden",
+      background: "linear-gradient(135deg, rgba(200,255,0,0.06) 0%, rgba(240,194,127,0.04) 100%)",
+      border: "1px solid rgba(200,255,0,0.12)",
+    }}>
+      <div style={{
+        position: "absolute", inset: 0, opacity: 0.03,
+        backgroundImage: "radial-gradient(var(--accent) 1px, transparent 1px)",
+        backgroundSize: "24px 24px",
+      }} />
+      <div style={{ position: "relative" }}>
+        <Badge variant="gold">✦ Join Our Network</Badge>
+        <h2 style={{ fontFamily: fontDisplay, fontSize: "clamp(30px, 4vw, 48px)", fontWeight: 900, marginTop: 20, lineHeight: 1.1 }}>
+          Are you a fitness coach?
+        </h2>
+        <p style={{ fontSize: 17, color: "var(--text2)", marginTop: 16, maxWidth: 520, margin: "16px auto 0" }}>
+          Join hundreds of coaches growing their business on FindMyCoach. Get discovered by thousands of clients.
+        </p>
+        <div style={{ marginTop: 32 }}>
+          <Button variant="gold" size="lg" onClick={() => setPage("become-coach")}>
+            Join as a Coach →
+          </Button>
+        </div>
+      </div>
+    </GlassCard>
+  </Section>
+);
+
+// ─── Footer ─────────────────────────────────────────────────────────────────
+const Footer = () => (
+  <footer style={{
+    padding: "60px 24px 30px", borderTop: "1px solid var(--border)",
+    background: "var(--bg)",
+  }}>
+    <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 40, marginBottom: 40 }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 900, color: "#000", fontFamily: fontDisplay }}>F</div>
+            <span style={{ fontFamily: fontDisplay, fontSize: 18, fontWeight: 800 }}>FindMyCoach</span>
+          </div>
+          <p style={{ fontSize: 14, color: "var(--text3)", lineHeight: 1.7, maxWidth: 300 }}>
+            The premier marketplace connecting fitness enthusiasts with world-class coaches.
+          </p>
+        </div>
+        {[
+          { title: "Platform", links: ["Find Coaches", "Programs", "Pricing", "Reviews"] },
+          { title: "Company", links: ["About", "Careers", "Blog", "Press"] },
+          { title: "Support", links: ["Help Center", "Contact", "Privacy", "Terms"] },
+        ].map(col => (
+          <div key={col.title}>
+            <h4 style={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: 14, marginBottom: 16, color: "var(--text)" }}>{col.title}</h4>
+            {col.links.map(l => (
+              <div key={l} style={{ fontSize: 13, color: "var(--text3)", marginBottom: 10, cursor: "pointer", transition: "color 0.3s" }}
+                onMouseEnter={e => e.target.style.color = "var(--text)"} onMouseLeave={e => e.target.style.color = "var(--text3)"}>
+                {l}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+      <div style={{ borderTop: "1px solid var(--border)", paddingTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ fontSize: 12, color: "var(--text3)" }}>© 2026 FindMyCoach. All rights reserved.</div>
+        <div style={{ fontSize: 12, color: "var(--text3)" }}>Made with 💚 in Dubai</div>
+      </div>
+    </div>
+  </footer>
+);
+
+// ─── Home Page ──────────────────────────────────────────────────────────────
+const HomePage = ({ setPage, setSelectedTrainer, setGoalFilter }) => (
+  <>
+    <Hero setPage={setPage} setGoalFilter={setGoalFilter} />
+    <ProgramsSection setPage={setPage} setGoalFilter={setGoalFilter} />
+    <FeaturedCoaches setPage={setPage} setSelectedTrainer={setSelectedTrainer} />
+    <HowItWorks />
+    <CTASection setPage={setPage} />
+  </>
+);
+
+// ─── Trainer Listing Page ───────────────────────────────────────────────────
+const TrainersPage = ({ setPage, setSelectedTrainer, goalFilter, setGoalFilter }) => {
+  const [priceRange, setPriceRange] = useState([0, 500]);
+  const [locFilter, setLocFilter] = useState("");
+  const [ratingFilter, setRatingFilter] = useState(0);
+
+  const filtered = TRAINERS.filter(t => {
+    if (goalFilter && !t.programs.includes(goalFilter) && !t.spec.toLowerCase().includes(goalFilter.toLowerCase())) return false;
+    if (t.price < priceRange[0] || t.price > priceRange[1]) return false;
+    if (locFilter && t.location !== locFilter) return false;
+    if (ratingFilter && t.rating < ratingFilter) return false;
+    return true;
+  });
+
+  return (
+    <div style={{ paddingTop: 96, minHeight: "100vh" }}>
+      <Section>
+        <SectionTitle sub="Browse" title="Find Your Perfect Coach" />
+        <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 30 }}>
+          {/* Sidebar */}
+          <div>
+            <GlassCard hover={false} style={{ padding: 24, position: "sticky", top: 96 }}>
+              <h3 style={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: 16, marginBottom: 24 }}>Filters</h3>
+
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ fontSize: 13, color: "var(--text2)", fontWeight: 600, marginBottom: 8, display: "block" }}>Goal</label>
+                <select value={goalFilter} onChange={e => setGoalFilter(e.target.value)} style={{
+                  width: "100%", padding: "10px 14px", borderRadius: 10, background: "var(--bg3)",
+                  border: "1px solid var(--border)", color: "var(--text)", fontSize: 13, fontFamily: font, outline: "none",
+                }}>
+                  <option value="">All Programs</option>
+                  {PROGRAMS.map(p => <option key={p.id} value={p.title}>{p.title}</option>)}
+                </select>
+              </div>
+
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ fontSize: 13, color: "var(--text2)", fontWeight: 600, marginBottom: 8, display: "block" }}>
+                  Max Price: <span style={{ color: "var(--accent)" }}>{priceRange[1]} AED</span>
+                </label>
+                <input type="range" min="100" max="500" value={priceRange[1]} onChange={e => setPriceRange([0, +e.target.value])} style={{ width: "100%", accentColor: "var(--accent)" }} />
+              </div>
+
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ fontSize: 13, color: "var(--text2)", fontWeight: 600, marginBottom: 8, display: "block" }}>Location</label>
+                <select value={locFilter} onChange={e => setLocFilter(e.target.value)} style={{
+                  width: "100%", padding: "10px 14px", borderRadius: 10, background: "var(--bg3)",
+                  border: "1px solid var(--border)", color: "var(--text)", fontSize: 13, fontFamily: font, outline: "none",
+                }}>
+                  <option value="">All Locations</option>
+                  {[...new Set(TRAINERS.map(t => t.location))].map(l => <option key={l} value={l}>{l}</option>)}
+                </select>
+              </div>
+
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 13, color: "var(--text2)", fontWeight: 600, marginBottom: 8, display: "block" }}>Min Rating</label>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {[0, 4.5, 4.7, 4.9].map(r => (
+                    <button key={r} onClick={() => setRatingFilter(r)} style={{
+                      padding: "6px 14px", borderRadius: 10, fontSize: 13, fontWeight: 600,
+                      border: ratingFilter === r ? "1px solid var(--accent)" : "1px solid var(--border)",
+                      background: ratingFilter === r ? "var(--accent-glow)" : "var(--bg3)",
+                      color: ratingFilter === r ? "var(--accent)" : "var(--text3)",
+                      cursor: "pointer", fontFamily: font, transition: "all 0.2s",
+                    }}>
+                      {r === 0 ? "All" : `${r}+`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <Button variant="ghost" size="sm" full onClick={() => { setGoalFilter(""); setLocFilter(""); setRatingFilter(0); setPriceRange([0,500]); }}>
+                Clear All Filters
+              </Button>
+            </GlassCard>
+          </div>
+
+          {/* Grid */}
+          <div>
+            <div style={{ fontSize: 14, color: "var(--text3)", marginBottom: 20 }}>{filtered.length} coaches found</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
+              {filtered.map((t, i) => (
+                <GlassCard key={t.id} style={{ overflow: "hidden", animationDelay: `${i * 0.05}s` }} className="fade-up">
+                  <div style={{ position: "relative" }}>
+                    <img src={t.img} alt={t.name} style={{ width: "100%", height: 200, objectFit: "cover" }} />
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%)" }} />
+                    <div style={{ position: "absolute", top: 12, right: 12 }}><Badge variant="accent">★ {t.rating}</Badge></div>
+                    <div style={{ position: "absolute", bottom: 12, left: 16 }}>
+                      <div style={{ fontSize: 11, color: "var(--text3)" }}>{t.location}</div>
+                    </div>
+                  </div>
+                  <div style={{ padding: 20 }}>
+                    <h3 style={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: 17, marginBottom: 4 }}>{t.name}</h3>
+                    <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 4 }}>{t.spec}</p>
+                    <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 16 }}>{t.exp} experience</p>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                      <div>
+                        <span style={{ fontSize: 20, fontWeight: 800, fontFamily: fontDisplay, color: "var(--accent)" }}>{t.price}</span>
+                        <span style={{ fontSize: 12, color: "var(--text3)" }}> AED</span>
+                      </div>
+                      <div style={{ fontSize: 12, color: "var(--text3)" }}>{t.reviews} reviews</div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <Button variant="secondary" size="sm" style={{ flex: 1 }} onClick={() => { setSelectedTrainer(t); setPage("trainer-profile"); }}>
+                        View Profile
+                      </Button>
+                      <Button variant="primary" size="sm" style={{ flex: 1 }} onClick={() => { setSelectedTrainer(t); setPage("trainer-profile"); }}>
+                        Book Now
+                      </Button>
+                    </div>
+                  </div>
+                </GlassCard>
+              ))}
+            </div>
+            {filtered.length === 0 && (
+              <div style={{ textAlign: "center", padding: 60, color: "var(--text3)" }}>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
+                <div style={{ fontSize: 18, fontWeight: 600 }}>No coaches found</div>
+                <div style={{ fontSize: 14, marginTop: 8 }}>Try adjusting your filters</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </Section>
+    </div>
+  );
+};
+
+// ─── Trainer Profile Page ───────────────────────────────────────────────────
+const TrainerProfile = ({ trainer, setShowBooking }) => {
+  if (!trainer) return null;
+  const reviewData = [
+    { name: "Sarah K.", text: "Absolutely incredible trainer. Transformed my fitness in 3 months!", rating: 5 },
+    { name: "Mike D.", text: "Very professional and knowledgeable. Highly recommend!", rating: 5 },
+    { name: "Amira R.", text: "Best investment in my health. Results speak for themselves.", rating: 5 },
+  ];
+  return (
+    <div style={{ paddingTop: 72, minHeight: "100vh" }}>
+      {/* Hero */}
+      <div style={{
+        position: "relative", height: 400, overflow: "hidden",
+        background: `linear-gradient(to bottom, transparent, var(--bg))`,
+      }}>
+        <img src={trainer.img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.3, filter: "blur(30px) saturate(1.5)", transform: "scale(1.2)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(10,10,10,0.5) 0%, var(--bg) 100%)" }} />
+      </div>
+
+      <Section style={{ marginTop: -200, position: "relative" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 40, alignItems: "start" }}>
+          {/* Left column */}
+          <div className="fade-up">
+            <GlassCard hover={false} style={{ padding: 28, textAlign: "center" }}>
+              <img src={trainer.img} alt={trainer.name} style={{ width: 140, height: 140, borderRadius: "50%", objectFit: "cover", border: "4px solid var(--accent)", margin: "0 auto 20px" }} />
+              <h1 style={{ fontFamily: fontDisplay, fontSize: 24, fontWeight: 800 }}>{trainer.name}</h1>
+              <p style={{ fontSize: 14, color: "var(--accent)", fontWeight: 600, marginTop: 6 }}>{trainer.spec}</p>
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 12 }}>
+                <div style={{ display: "flex", gap: 2 }}>{[1,2,3,4,5].map(i => <Star key={i} filled={i <= trainer.rating} />)}</div>
+                <span style={{ fontSize: 14, fontWeight: 700 }}>{trainer.rating}</span>
+                <span style={{ fontSize: 12, color: "var(--text3)" }}>({trainer.reviews})</span>
+              </div>
+              <div style={{ display: "flex", gap: 12, marginTop: 20, justifyContent: "center", flexWrap: "wrap" }}>
+                <Badge variant="accent">📍 {trainer.location}</Badge>
+                <Badge>🎯 {trainer.exp}</Badge>
+              </div>
+              <div style={{ marginTop: 20, padding: "16px 0", borderTop: "1px solid var(--border)" }}>
+                <div style={{ fontSize: 14, color: "var(--text3)" }}>Starting from</div>
+                <div style={{ fontSize: 36, fontWeight: 900, fontFamily: fontDisplay, color: "var(--accent)" }}>
+                  {trainer.price} <span style={{ fontSize: 16, color: "var(--text3)", fontWeight: 400 }}>AED/session</span>
+                </div>
+              </div>
+              <Button variant="primary" size="lg" full onClick={() => setShowBooking(true)} style={{ marginTop: 8 }}>
+                Request Booking
+              </Button>
+            </GlassCard>
+          </div>
+
+          {/* Right column */}
+          <div className="fade-up" style={{ animationDelay: "0.15s" }}>
+            {/* About */}
+            <GlassCard hover={false} style={{ padding: 28, marginBottom: 20 }}>
+              <h2 style={{ fontFamily: fontDisplay, fontWeight: 800, fontSize: 20, marginBottom: 16 }}>About</h2>
+              <p style={{ fontSize: 15, color: "var(--text2)", lineHeight: 1.8 }}>{trainer.bio}</p>
+            </GlassCard>
+
+            {/* Programs */}
+            <GlassCard hover={false} style={{ padding: 28, marginBottom: 20 }}>
+              <h2 style={{ fontFamily: fontDisplay, fontWeight: 800, fontSize: 20, marginBottom: 16 }}>Programs Offered</h2>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {trainer.programs.map(p => {
+                  const prog = PROGRAMS.find(pr => pr.title === p);
+                  return (
+                    <div key={p} style={{
+                      padding: "10px 18px", borderRadius: 14,
+                      background: "var(--bg3)", border: "1px solid var(--border)",
+                      fontSize: 14, fontWeight: 500,
+                    }}>
+                      {prog?.icon} {p}
+                    </div>
+                  );
+                })}
+              </div>
+            </GlassCard>
+
+            {/* Packages */}
+            <GlassCard hover={false} style={{ padding: 28, marginBottom: 20 }}>
+              <h2 style={{ fontFamily: fontDisplay, fontWeight: 800, fontSize: 20, marginBottom: 16 }}>Pricing Packages</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+                {PACKAGES.map(pk => (
+                  <div key={pk.name} style={{
+                    padding: 20, borderRadius: "var(--radius-sm)",
+                    background: "var(--bg3)", border: "1px solid var(--border)",
+                    position: "relative", overflow: "hidden",
+                  }}>
+                    {pk.discount > 0 && (
+                      <div style={{
+                        position: "absolute", top: 8, right: 8,
+                        background: "var(--accent)", color: "#000", fontSize: 11,
+                        fontWeight: 700, padding: "2px 8px", borderRadius: 8,
+                      }}>-{pk.discount}%</div>
+                    )}
+                    <div style={{ fontSize: 13, color: "var(--text3)", marginBottom: 6 }}>{pk.name}</div>
+                    <div style={{ fontSize: 13, color: "var(--text3)" }}>{pk.sessions} session{pk.sessions > 1 ? "s" : ""}</div>
+                    <div style={{ fontSize: 22, fontWeight: 800, fontFamily: fontDisplay, color: "var(--accent)", marginTop: 8 }}>
+                      {Math.round(trainer.price * pk.sessions * (1 - pk.discount / 100))}
+                      <span style={{ fontSize: 13, color: "var(--text3)", fontWeight: 400 }}> AED</span>
+                    </div>
+                    {pk.discount > 0 && (
+                      <div style={{ fontSize: 12, color: "var(--text3)", textDecoration: "line-through" }}>
+                        {trainer.price * pk.sessions} AED
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
+
+            {/* Availability */}
+            <GlassCard hover={false} style={{ padding: 28, marginBottom: 20 }}>
+              <h2 style={{ fontFamily: fontDisplay, fontWeight: 800, fontSize: 20, marginBottom: 16 }}>Availability</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 8 }}>
+                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, i) => (
+                  <div key={d} style={{
+                    textAlign: "center", padding: "12px 8px", borderRadius: 12,
+                    background: i < 5 ? "var(--accent-glow)" : "var(--bg3)",
+                    border: `1px solid ${i < 5 ? "rgba(200,255,0,0.15)" : "var(--border)"}`,
+                  }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: i < 5 ? "var(--accent)" : "var(--text3)" }}>{d}</div>
+                    <div style={{ fontSize: 10, color: "var(--text3)", marginTop: 4 }}>{i < 5 ? "6am–9pm" : i === 5 ? "8am–2pm" : "Off"}</div>
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
+
+            {/* Reviews */}
+            <GlassCard hover={false} style={{ padding: 28 }}>
+              <h2 style={{ fontFamily: fontDisplay, fontWeight: 800, fontSize: 20, marginBottom: 16 }}>Reviews</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {reviewData.map((r, i) => (
+                  <div key={i} style={{ padding: 20, background: "var(--bg3)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14 }}>{r.name}</div>
+                      <div style={{ display: "flex", gap: 2 }}>{[1,2,3,4,5].map(j => <Star key={j} filled={j <= r.rating} />)}</div>
+                    </div>
+                    <p style={{ fontSize: 14, color: "var(--text2)", lineHeight: 1.6 }}>{r.text}</p>
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
+          </div>
+        </div>
+      </Section>
+    </div>
+  );
+};
+
+// ─── Booking Modal ──────────────────────────────────────────────────────────
+const BookingModal = ({ trainer, onClose }) => {
+  const [form, setForm] = useState({ name: "", phone: "", email: "", goal: "", date: "", time: "", notes: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const u = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  if (submitted) {
+    return (
+      <div style={{ position: "fixed", inset: 0, zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.8)", backdropFilter: "blur(10px)" }} onClick={onClose}>
+        <div className="scale-in" onClick={e => e.stopPropagation()} style={{
+          background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 24,
+          padding: 48, maxWidth: 440, width: "90%", textAlign: "center",
+        }}>
+          <div style={{ fontSize: 64, marginBottom: 20 }}>✅</div>
+          <h2 style={{ fontFamily: fontDisplay, fontSize: 24, fontWeight: 800, marginBottom: 12 }}>Booking Requested!</h2>
+          <p style={{ fontSize: 15, color: "var(--text2)", lineHeight: 1.7, marginBottom: 28 }}>
+            Your booking request has been sent to {trainer.name}. They'll get back to you within 24 hours.
+          </p>
+          <Button variant="primary" size="lg" onClick={onClose}>Done</Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.8)", backdropFilter: "blur(10px)" }} onClick={onClose}>
+      <div className="scale-in" onClick={e => e.stopPropagation()} style={{
+        background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 24,
+        padding: 36, maxWidth: 520, width: "90%", maxHeight: "85vh", overflowY: "auto",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
+          <h2 style={{ fontFamily: fontDisplay, fontSize: 22, fontWeight: 800 }}>Request Booking</h2>
+          <button onClick={onClose} style={{ background: "var(--card)", border: "1px solid var(--border)", width: 36, height: 36, borderRadius: 12, color: "var(--text)", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 14, padding: 16, background: "var(--bg3)", borderRadius: 16, marginBottom: 24, border: "1px solid var(--border)" }}>
+          <img src={trainer.img} alt="" style={{ width: 48, height: 48, borderRadius: 14, objectFit: "cover" }} />
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>{trainer.name}</div>
+            <div style={{ fontSize: 13, color: "var(--text3)" }}>{trainer.spec} · {trainer.price} AED/session</div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <Input label="Full Name" placeholder="Your name" value={form.name} onChange={e => u("name", e.target.value)} />
+            <Input label="Phone" placeholder="+971..." value={form.phone} onChange={e => u("phone", e.target.value)} />
+          </div>
+          <Input label="Email" type="email" placeholder="you@email.com" value={form.email} onChange={e => u("email", e.target.value)} />
+          <Input label="Training Goal" placeholder="Select goal" value={form.goal} onChange={e => u("goal", e.target.value)}
+            options={trainer.programs} />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <Input label="Preferred Date" type="date" value={form.date} onChange={e => u("date", e.target.value)} />
+            <Input label="Preferred Time" value={form.time} onChange={e => u("time", e.target.value)}
+              options={["6:00 AM", "7:00 AM", "8:00 AM", "9:00 AM", "10:00 AM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"]} />
+          </div>
+          <Input label="Additional Notes" textarea placeholder="Any specific requirements..." value={form.notes} onChange={e => u("notes", e.target.value)} />
+        </div>
+
+        <Button variant="primary" size="lg" full onClick={() => setSubmitted(true)} style={{ marginTop: 24 }}>
+          Submit Booking Request
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// ─── Become a Coach Page ────────────────────────────────────────────────────
+const BecomeCoachPage = () => {
+  const [form, setForm] = useState({ name: "", email: "", phone: "", spec: "", exp: "", price: "", location: "", bio: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const u = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  if (submitted) {
+    return (
+      <div style={{ paddingTop: 120, minHeight: "100vh", textAlign: "center" }}>
+        <Section>
+          <div className="scale-in" style={{ maxWidth: 500, margin: "0 auto" }}>
+            <div style={{ fontSize: 72, marginBottom: 24 }}>🎉</div>
+            <h1 style={{ fontFamily: fontDisplay, fontSize: 36, fontWeight: 900, marginBottom: 16 }}>Application Submitted!</h1>
+            <p style={{ fontSize: 17, color: "var(--text2)", lineHeight: 1.7 }}>
+              Thank you for your interest in joining FindMyCoach. Our team will review your application and get back to you within 48 hours.
+            </p>
+          </div>
+        </Section>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ paddingTop: 96, minHeight: "100vh" }}>
+      <Section>
+        <div style={{ maxWidth: 680, margin: "0 auto" }}>
+          <div className="fade-up" style={{ textAlign: "center", marginBottom: 48 }}>
+            <Badge variant="gold">✦ Coach Application</Badge>
+            <h1 style={{ fontFamily: fontDisplay, fontSize: "clamp(32px, 5vw, 48px)", fontWeight: 900, marginTop: 16 }}>
+              Grow Your Coaching Business
+            </h1>
+            <p style={{ fontSize: 17, color: "var(--text2)", marginTop: 12, lineHeight: 1.7 }}>
+              Join our network of elite fitness professionals and connect with thousands of potential clients.
+            </p>
+          </div>
+
+          {/* Benefits */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 48 }}>
+            {[
+              { icon: "👥", title: "5000+ Clients", desc: "Active users" },
+              { icon: "💰", title: "Zero Commission", desc: "For first 3 months" },
+              { icon: "📈", title: "Growth Tools", desc: "Analytics & insights" },
+            ].map(b => (
+              <GlassCard key={b.title} hover={false} style={{ padding: 20, textAlign: "center" }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>{b.icon}</div>
+                <div style={{ fontFamily: fontDisplay, fontWeight: 700, fontSize: 15 }}>{b.title}</div>
+                <div style={{ fontSize: 12, color: "var(--text3)" }}>{b.desc}</div>
+              </GlassCard>
+            ))}
+          </div>
+
+          <GlassCard hover={false} style={{ padding: 36 }} className="fade-up">
+            <h2 style={{ fontFamily: fontDisplay, fontSize: 22, fontWeight: 800, marginBottom: 28 }}>Coach Application</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+                <Input label="Full Name *" placeholder="Your name" value={form.name} onChange={e => u("name", e.target.value)} />
+                <Input label="Email *" type="email" placeholder="coach@email.com" value={form.email} onChange={e => u("email", e.target.value)} />
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+                <Input label="Phone *" placeholder="+971..." value={form.phone} onChange={e => u("phone", e.target.value)} />
+                <Input label="Location" value={form.location} onChange={e => u("location", e.target.value)}
+                  options={["Dubai Marina", "Downtown Dubai", "JBR", "JLT", "Business Bay", "DIFC", "Palm Jumeirah", "Online"]} />
+              </div>
+              <Input label="Specialization *" value={form.spec} onChange={e => u("spec", e.target.value)}
+                options={PROGRAMS.map(p => p.title)} />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+                <Input label="Years of Experience" value={form.exp} onChange={e => u("exp", e.target.value)}
+                  options={["1-2 years", "3-5 years", "5-8 years", "8-10 years", "10+ years"]} />
+                <Input label="Price per Session (AED)" type="number" placeholder="e.g. 250" value={form.price} onChange={e => u("price", e.target.value)} />
+              </div>
+              <Input label="Bio / About You" textarea placeholder="Tell us about your experience, certifications, and coaching philosophy..." value={form.bio} onChange={e => u("bio", e.target.value)} />
+            </div>
+            <Button variant="gold" size="lg" full onClick={() => setSubmitted(true)} style={{ marginTop: 28 }}>
+              Submit Application →
+            </Button>
+          </GlassCard>
+        </div>
+      </Section>
+    </div>
+  );
+};
+
+// ─── Auth Modal ─────────────────────────────────────────────────────────────
+const AuthModal = ({ onClose }) => {
+  const [mode, setMode] = useState("login");
+  const [email, setEmail] = useState("");
+  const [pass, setPass] = useState("");
+  const [name, setName] = useState("");
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.8)", backdropFilter: "blur(10px)" }} onClick={onClose}>
+      <div className="scale-in" onClick={e => e.stopPropagation()} style={{
+        background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 24,
+        padding: 36, maxWidth: 420, width: "90%",
+      }}>
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 16, background: "var(--accent)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 900, color: "#000", fontFamily: fontDisplay, marginBottom: 16 }}>F</div>
+          <h2 style={{ fontFamily: fontDisplay, fontSize: 24, fontWeight: 800 }}>{mode === "login" ? "Welcome Back" : "Create Account"}</h2>
+          <p style={{ fontSize: 14, color: "var(--text3)", marginTop: 6 }}>
+            {mode === "login" ? "Sign in to your FindMyCoach account" : "Join the FindMyCoach community"}
+          </p>
+        </div>
+
+        {/* Google button */}
+        <button style={{
+          width: "100%", padding: "12px 20px", borderRadius: 14,
+          background: "var(--bg3)", border: "1px solid var(--border)",
+          color: "var(--text)", fontSize: 14, fontWeight: 600,
+          cursor: "pointer", fontFamily: font, marginBottom: 20,
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+          transition: "all 0.3s",
+        }} onMouseEnter={e => e.target.style.borderColor = "var(--accent)"} onMouseLeave={e => e.target.style.borderColor = "var(--border)"}>
+          <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
+          <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+          <span style={{ fontSize: 12, color: "var(--text3)" }}>or</span>
+          <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {mode === "signup" && (
+            <Input label="Full Name" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} />
+          )}
+          <Input label="Email" type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} />
+          <Input label="Password" type="password" placeholder="••••••••" value={pass} onChange={e => setPass(e.target.value)} />
+        </div>
+
+        <Button variant="primary" size="lg" full onClick={onClose} style={{ marginTop: 20 }}>
+          {mode === "login" ? "Sign In" : "Create Account"}
+        </Button>
+
+        <div style={{ textAlign: "center", marginTop: 20, fontSize: 14, color: "var(--text3)" }}>
+          {mode === "login" ? "Don't have an account? " : "Already have an account? "}
+          <span onClick={() => setMode(mode === "login" ? "signup" : "login")} style={{ color: "var(--accent)", cursor: "pointer", fontWeight: 600 }}>
+            {mode === "login" ? "Sign Up" : "Sign In"}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Main App ───────────────────────────────────────────────────────────────
+export default function FindMyCoach() {
+  const [page, setPage] = useState("home");
+  const [selectedTrainer, setSelectedTrainer] = useState(null);
+  const [showBooking, setShowBooking] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [goalFilter, setGoalFilter] = useState("");
+
+  const navTo = (p) => {
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  return (
+    <div style={{ fontFamily: font, background: "var(--bg)", minHeight: "100vh" }}>
+      <GlobalCSS />
+      <Navbar page={page} setPage={navTo} setShowAuth={setShowAuth} />
+
+      {page === "home" && <HomePage setPage={navTo} setSelectedTrainer={setSelectedTrainer} setGoalFilter={setGoalFilter} />}
+      {page === "trainers" && <TrainersPage setPage={navTo} setSelectedTrainer={setSelectedTrainer} goalFilter={goalFilter} setGoalFilter={setGoalFilter} />}
+      {page === "trainer-profile" && <TrainerProfile trainer={selectedTrainer} setShowBooking={setShowBooking} />}
+      {page === "become-coach" && <BecomeCoachPage />}
+
+      {showBooking && selectedTrainer && <BookingModal trainer={selectedTrainer} onClose={() => setShowBooking(false)} />}
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+
+      <Footer />
+    </div>
+  );
+}
